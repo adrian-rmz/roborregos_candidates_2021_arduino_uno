@@ -1,12 +1,15 @@
 #include <Arduino.h>
 
+// L298N
 // Right Motor
-int right_motor_1 = 3;
-int right_motor_2 = 4;
+int IN1 = 8;
+int IN2 = 7;
+int ENA = 9;
 
 // Left Motor
-int left_motor_1 = 5;
-int left_motor_2 = 6;
+int IN3 = 13;
+int IN4 = 12;
+int ENB = 11;
 
 // Front Ultrasonic
 int trigger_front = A0;
@@ -20,16 +23,23 @@ int echo_right = A3;
 int trigger_left = A4;
 int echo_left = A5;
 
+// Speeds 
+int min_speed = 85;
+int mid_speed = 170;
+int max_speed = 255;
+
 
 void setup() {
-  // pinModes
-  pinMode(right_motor_1, OUTPUT);
-  pinMode(right_motor_2, OUTPUT);
+  // L298N pinModes
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENA, OUTPUT);
 
-  pinMode(left_motor_1, OUTPUT);
-  pinMode(left_motor_2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  pinMode(ENB, OUTPUT);
 
-    // Serial Communication
+  // Serial Communication
   Serial.begin(9600);
 }
 
@@ -43,44 +53,59 @@ void loop() {
 
 //****************************MOVEMENT****************************//
 
-void forward() {
+void forward(int speed) {
 // Forward
-  digitalWrite(right_motor_1, HIGH);
-  digitalWrite(right_motor_2, LOW);
-  digitalWrite(left_motor_1, HIGH);
-  digitalWrite(left_motor_2, LOW);
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, speed);
+
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, speed);
 }
 
-void backward() {
+void backward(int speed) {
   // Backward
-  digitalWrite(right_motor_1, LOW);
-  digitalWrite(right_motor_2, HIGH);
-  digitalWrite(left_motor_1, LOW);
-  digitalWrite(left_motor_2, HIGH);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, speed);
+
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENB, speed);
 }
 
-void right() {
+void right(int speed) {
   // Right
-  digitalWrite(right_motor_1, LOW);
-  digitalWrite(right_motor_2, HIGH);
-  digitalWrite(left_motor_1, HIGH);
-  digitalWrite(left_motor_2, LOW);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, speed);
+
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, speed);
 }
 
-void left() {
+void left(int speed) {
   // Left
-  digitalWrite(right_motor_1, HIGH);
-  digitalWrite(right_motor_2, LOW);
-  digitalWrite(left_motor_1, LOW);
-  digitalWrite(left_motor_2, HIGH);
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, speed);
+
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENB, speed);
 }
 
 void stop() {
   // Stop
-  digitalWrite(right_motor_1, LOW);
-  digitalWrite(right_motor_2, LOW);
-  digitalWrite(left_motor_1, LOW);
-  digitalWrite(left_motor_2, LOW);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, 0);
+
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, 0);
 }
 
 
