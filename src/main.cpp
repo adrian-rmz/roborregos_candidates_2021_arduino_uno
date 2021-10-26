@@ -1,77 +1,75 @@
 #include <Arduino.h>
 
-// L298N
+// IMPORT CLASSES
+
+#include "../lib/UltrasonicSensor/UltrasonicSensor.h"
+#include "../lib/ColorSensor/ColorSensor.h"
+
+
+// DEFINE PINS
+
 // Right Motor
-int IN1 = 8;
-int IN2 = 7;
-int ENA = 9;
+#define IN1 6
+#define IN2 7
 
 // Left Motor
-int IN3 = 13;
-int IN4 = 12;
-int ENB = 11;
+#define IN3 8
+#define IN4 9
+
+// Ultrasonic
+#define trign 3
+#define left_echo A0
+#define front_echo A1
+#define right_echo A2
+
+// Color Sensors
+#define s2n 4
+#define s3n 5
+#define left_out A3
+#define right_out A4
+
+// LED RGB 
+#define r_pin 11
+#define g_pin 12
+#define b_pin 13
+
+// Servomotor
+#define servoM 10
 
 
-// Front Ultrasonic
-int trigger_front = A0;
-int echo_front = A1;
+// VARIABLES
 
-// Right Ultrasonic
-int trigger_right = A2;
-int echo_right = A3;
-
-// Left Ultrasonic
-int trigger_left = A4;
-int echo_left = A5;
-
-
-// Speeds 
-int min_speed = 85;
-int mid_speed = 170;
-int max_speed = 255;
-
-
-// TCS3200 Color Sensor
-int s2 = 2;
-int s3 = 3;
-int out_pin = 4;
-
-// Color Variables
+// Color 
 int r_color;
 int g_color;
 int b_color;
 
-// RGB LED
-int red_pin = 14;
-int green_pin = 15;
-int blue_pin = 16;
-
-
-
-// PULSE WIDTH
+// Pulse Width
 unsigned int pulse_width;
 
+
+// OBJECTS
+
+// Ultrasonic Sensor
+ultrasonicSensor left_ultrasonic(trign, left_echo);
+ultrasonicSensor front_ultrasonic(trign, front_echo);
+ultrasonicSensor right_ultrasonic(trign, right_echo);
+
+// Color Sensor
+colorSensor left_color(s2n, s3n, left_out, r_pin, g_pin, b_pin, pulse_width);
+colorSensor right_color(s2n, s3n, right_out, r_pin, g_pin, b_pin, pulse_width);
+
+
+// CODE
 
 void setup() {
   // L298N pinModes
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
-  pinMode(ENA, OUTPUT);
-
+  
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
-  pinMode(ENB, OUTPUT);
-
-  // TCS3200 pinModes
-  pinMode(s2, OUTPUT);
-  pinMode(s3, OUTPUT);
-  pinMode(out_pin, INPUT);
-
-  // RGB LED pinModes
-  pinMode(red_pin, OUTPUT);
-  pinMode(green_pin, OUTPUT);
-  pinMode(blue_pin, OUTPUT);
-
+  
   // Serial Communication
   Serial.begin(9600);
 }
@@ -79,179 +77,82 @@ void setup() {
 
 void loop() {
   
-  
+  //*********************** A ZONE ***********************//
+
+
+  //*********************** B ZONE ***********************//
+
+
+  //*********************** C ZONE ***********************//
+  forward();
+  byte left = 0;
+  byte right = 0;
+  byte sum = left + right;
+
  
 }
 
 
 //****************************MOVEMENT****************************//
 
-void forward(int speed) {
+void forward() {
 // Forward
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
-  analogWrite(ENA, speed);
-
+  
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-  analogWrite(ENB, speed);
 }
 
-void backward(int speed) {
+void backward() {
   // Backward
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
-  analogWrite(ENA, speed);
-
+  
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
-  analogWrite(ENB, speed);
 }
 
-void right(int speed) {
+void right() {
   // Right
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
-  analogWrite(ENA, speed);
 
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-  analogWrite(ENB, speed);
 }
 
-void left(int speed) {
+void left() {
   // Left
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
-  analogWrite(ENA, speed);
 
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
-  analogWrite(ENB, speed);
 }
 
 void stop() {
   // Stop
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
-  analogWrite(ENA, 0);
 
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
-  analogWrite(ENB, 0);
 }
 
 
-//****************************DISTANCE****************************//
-
-float distance_front() {
-  digitalWrite(trigger_front, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigger_front, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigger_front, LOW);
-  float duration_front = pulseIn(echo_front, HIGH);
-  float distance_front = duration_front * 0.34 / 2;
-  return distance_front;
-}
-
-float distance_right() {
-  digitalWrite(trigger_right, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigger_right, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigger_right, LOW);
-  float duration_right = pulseIn(echo_right, HIGH);
-  float distance_right = duration_right * 0.34 / 2;
-  return distance_right;
-}
-
-float distance_left() {
-  digitalWrite(trigger_left, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigger_left, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigger_left, LOW);
-  float duration_left = pulseIn(echo_left, HIGH);
-  float distance_left = duration_left * 0.34 / 2;
-  return distance_left;
-}
-
-
-//***********************COLOR SENSOR***********************//
-
-void color_sensor() {
-  // RED
-  digitalWrite(s2, LOW);
-  digitalWrite(s3, LOW);
-  pulse_width = pulseIn(out_pin, LOW);
-  r_color = pulse_width / 400. - 1;
-  r_color = (255 - r_color);
-
-  // GREEN
-  digitalWrite(s2, HIGH);
-  digitalWrite(s3, HIGH);
-  pulse_width = pulseIn(out_pin, LOW);
-  g_color = pulse_width / 400. - 1;
-  g_color = (255 - g_color);
-
-  // BLUE
-  digitalWrite(s2, LOW);
-  digitalWrite(s3, HIGH);
-  pulse_width = pulseIn(out_pin, LOW);
-  b_color = pulse_width / 400. - 1;
-  b_color = (255 - b_color);
-
-  // TEST
-  Serial.print(r_color);
-  Serial.print(" , ");
-  Serial.print(g_color);  
-  Serial.print(" , ");  
-  Serial.print(b_color);
-  Serial.println("");
-
-    
-  // RGB LED
-  if(r_color > g_color && g_color > b_color){
-    r_color = 255;
-    g_color = g_color / 2;
-    b_color = 0;
-  } else if (r_color > b_color && b_color > g_color){
-    r_color = 255;
-    g_color = 0;
-    b_color = b_color / 2;
-  } else if (g_color > r_color && r_color > b_color){
-    r_color = r_color / 2;
-    g_color = 255;
-    b_color = 0;
-  } else if (g_color > b_color && b_color > r_color){
-    r_color = 0;
-    g_color = 255;
-    b_color = b_color / 2;
-  } else if (b_color > r_color && r_color > g_color){
-    r_color = r_color / 2;
-    g_color = 0;
-    b_color = 255;
-  } else if (b_color > g_color && g_color > r_color){
-    r_color = 0;
-    g_color = g_color / 2;
-    b_color = 255;
+//**************************** DECIMAL TO BINARY ****************************//
+// return decimal to binary
+int dec_to_bin(int dec) {
+  int bin[8];
+  int i = 0;
+  while (dec > 0) {
+    bin[i] = dec % 2;
+    dec = dec / 2;
+    i++;
   }
-  
-  // Parametrize colors
-  r_color = r_color * 1.0;
-  b_color = b_color * 0.5;
-  g_color = g_color * 0.75;
-
-  // RETURN
-  Serial.print(r_color);
-  Serial.print(" , ");
-  Serial.print(g_color);  
-  Serial.print(" , ");  
-  Serial.print(b_color);
-  Serial.println("");
-  analogWrite(red_pin, r_color);
-  analogWrite(green_pin, g_color);
-  analogWrite(blue_pin, b_color);
-  delay(250);
+  for (int j = i - 1; j >= 0; j--) {
+    Serial.print(bin[j]);
+  }
+  return bin[8];
 }
