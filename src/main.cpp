@@ -84,15 +84,8 @@ void loop() {
   float right_distance = right_ultrasonic.distance();
 
   if (show_left_color == (255, 255, 0)) { // Detect A zone (yellow color)
-    
-  } else if ((show_left_color == (0, 0,255)) && (front_distance > 50) && (left_distance < 10) && (right_distance < 10)) { // Detect B zone 
 
-  } else if (show_left_color == (153, 0, 255)) { // Detect C zone 
-  
-  } else if (show_left_color == (255, 0, 164)) { // Detect Ramp
-  
-  }
-  
+    
   //*********************** A ZONE ***********************//
   float left_distance = left_ultrasonic.distance(); 
   float front_distance = front_ultrasonic.distance(); 
@@ -127,52 +120,57 @@ void loop() {
   } else {
     forward();
   }
+    
+  } else if ((show_left_color == (0, 0,255)) && (front_distance > 50) && (left_distance < 10) && (right_distance < 10)) { // Detect B zone 
+
+    //*********************** B ZONE ***********************//
+
+  } else if (show_left_color == (153, 0, 255)) { // Detect C zone 
+
+    //*********************** C ZONE ***********************//
+    left_color.turn_off();
+    right_color.turn_off();
+    int detect_left_color = left_color.detect_color();
+    int detect_right_color = right_color.detect_color();
+    forward();
+    byte left = 0;
+    byte right = 0;
+    
+    if (detect_left_color == (255, 255, 0)) { // yellow
+      left += 1;
+    } else if (detect_left_color == (0, 255, 0)) { // green
+      left += 2;
+    } else if (detect_left_color == (0, 0, 0)) {  // black
+      right = 0;
+    } else if (detect_left_color == (255, 255, 255)) { // white
+      left += 0;
+    }
+
+    if (detect_right_color == (255, 255, 0)) { // yellow
+      right += 1;
+    } else if (detect_right_color == (0, 255, 0)) { // green
+      right += 2;
+    } else if (detect_right_color == (0, 0, 0)) {  // black
+      left = 0;
+    } else if (detect_right_color == (255, 255, 255)) { // white
+      right += 0;
+    }
+
+    byte sum = left + right;
+    byte binary_sum = dec_to_bin(sum);
 
 
-  //*********************** B ZONE ***********************//
+    // Front Wall
+    float front_distance = front_ultrasonic.distance();
+    if ((front_distance < 10) && (binary_sum % 2 == 0)) { // pair
+      turn_left();
+    } else if ((front_distance < 10) && (binary_sum % 2 != 0)) { // odd
+      turn_right();
+    } 
   
-
-
-  //*********************** C ZONE ***********************//
-  left_color.turn_off();
-  right_color.turn_off();
-  int detect_left_color = left_color.detect_color();
-  int detect_right_color = right_color.detect_color();
-  forward();
-  byte left = 0;
-  byte right = 0;
+  } else if (show_left_color == (255, 0, 164)) { // Detect Ramp
   
-  if (detect_left_color == (255, 255, 0)) { // yellow
-    left += 1;
-  } else if (detect_left_color == (0, 255, 0)) { // green
-    left += 2;
-  } else if (detect_left_color == (0, 0, 0)) {  // black
-    right = 0;
-  } else if (detect_left_color == (255, 255, 255)) { // white
-    left += 0;
-  }
-
-  if (detect_right_color == (255, 255, 0)) { // yellow
-    right += 1;
-  } else if (detect_right_color == (0, 255, 0)) { // green
-    right += 2;
-  } else if (detect_right_color == (0, 0, 0)) {  // black
-    left = 0;
-  } else if (detect_right_color == (255, 255, 255)) { // white
-    right += 0;
-  }
-
-  byte sum = left + right;
-  byte binary_sum = dec_to_bin(sum);
-
-
-  // Front Wall
-  float front_distance = front_ultrasonic.distance();
-  if ((front_distance < 10) && (binary_sum % 2 == 0)) { // pair
-    turn_left();
-  } else if ((front_distance < 10) && (binary_sum % 2 != 0)) { // odd
-    turn_right();
-  }  
+  }   
 
 } 
 
