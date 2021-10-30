@@ -25,7 +25,11 @@ class colorSensor {
     colorSensor(byte s2, byte s3, byte out, byte r_pin, byte g_pin, byte b_pin, unsigned int pulse_width);
 
     //Methods
-    void detect_and_show();
+    int detect_and_show();
+
+    int detect_color();
+  
+    void turn_off();
 
 };
 

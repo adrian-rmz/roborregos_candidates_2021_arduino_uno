@@ -76,21 +76,105 @@ void setup() {
 
 
 void loop() {
+
+  int show_left_color = left_color.detect_and_show();
+
+  float left_distance = left_ultrasonic.distance(); 
+  float front_distance = front_ultrasonic.distance(); 
+  float right_distance = right_ultrasonic.distance();
+
+  if (show_left_color == (255, 255, 0)) { // Detect A zone (yellow color)
+    
+  } else if ((show_left_color == (0, 0,255)) && (front_distance > 50) && (left_distance < 10) && (right_distance < 10)) { // Detect B zone 
+
+  } else if (show_left_color == (153, 0, 255)) { // Detect C zone 
+  
+  } else if (show_left_color == (255, 0, 164)) { // Detect Ramp
+  
+  }
   
   //*********************** A ZONE ***********************//
+  float left_distance = left_ultrasonic.distance(); 
+  float front_distance = front_ultrasonic.distance(); 
+  float right_distance = right_ultrasonic.distance();
+
+  if (front_distance < 10) { // Front Wall
+    
+    if (left_distance < 10 && right_distance < 10) { // Front Wall & Left Wall & Right Wall
+      turn_left();
+      delay(30);
+      turn_left();
+      delay(30);
+      backward(); // To align the robot with the wall
+      delay(1000); 
+      forward();
+    } else if (right_distance < 10) { // Front Wall & Right Wall
+      turn_left();
+      delay(30);
+      backward(); // To align the robot with the wall
+      delay(1000);
+      forward();
+    } else if (left_distance < 10) { // Front Wall & Left Wall
+      turn_right();
+      delay(30);
+      backward(); // To align the robot with the wall
+      delay(1000);
+      forward();
+    } 
+
+    //delay(3000) // Wait until the robot reaches the next square
+
+  } else {
+    forward();
+  }
 
 
   //*********************** B ZONE ***********************//
+  
 
 
   //*********************** C ZONE ***********************//
+  left_color.turn_off();
+  right_color.turn_off();
+  int detect_left_color = left_color.detect_color();
+  int detect_right_color = right_color.detect_color();
   forward();
   byte left = 0;
   byte right = 0;
-  byte sum = left + right;
+  
+  if (detect_left_color == (255, 255, 0)) { // yellow
+    left += 1;
+  } else if (detect_left_color == (0, 255, 0)) { // green
+    left += 2;
+  } else if (detect_left_color == (0, 0, 0)) {  // black
+    right = 0;
+  } else if (detect_left_color == (255, 255, 255)) { // white
+    left += 0;
+  }
 
- 
-}
+  if (detect_right_color == (255, 255, 0)) { // yellow
+    right += 1;
+  } else if (detect_right_color == (0, 255, 0)) { // green
+    right += 2;
+  } else if (detect_right_color == (0, 0, 0)) {  // black
+    left = 0;
+  } else if (detect_right_color == (255, 255, 255)) { // white
+    right += 0;
+  }
+
+  byte sum = left + right;
+  byte binary_sum = dec_to_bin(sum);
+
+
+  // Front Wall
+  float front_distance = front_ultrasonic.distance();
+  if ((front_distance < 10) && (binary_sum % 2 == 0)) { // pair
+    turn_left();
+  } else if ((front_distance < 10) && (binary_sum % 2 != 0)) { // odd
+    turn_right();
+  }  
+
+} 
 
 
 //****************************MOVEMENT****************************//
@@ -113,7 +197,7 @@ void backward() {
   digitalWrite(IN4, HIGH);
 }
 
-void right() {
+void turn_right() {
   // Right
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
@@ -122,7 +206,7 @@ void right() {
   digitalWrite(IN4, LOW);
 }
 
-void left() {
+void turn_left() {
   // Left
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
@@ -142,17 +226,76 @@ void stop() {
 
 
 //**************************** DECIMAL TO BINARY ****************************//
-// return decimal to binary
+
 int dec_to_bin(int dec) {
   int bin[8];
-  int i = 0;
-  while (dec > 0) {
-    bin[i] = dec % 2;
+  int lenght = sizeof(bin);
+
+  for (int i = 0; i < 8; i++){
+    bin[i] = dec % 2;  
     dec = dec / 2;
-    i++;
   }
-  for (int j = i - 1; j >= 0; j--) {
-    Serial.print(bin[j]);
+
+  for (int i = 7; i >= 0; i--){
+    if(bin[i] == 0) {
+      red_led();
+    } else if (bin[i] == 1) {
+      green_led();
+    }
   }
-  return bin[8];
+
+  blue_led();
+  return bin[last_element(bin, lenght)];
+}
+
+
+// RGB Led Colors
+void red_led() {
+  // Show Led in Red
+  analogWrite(r_pin, 255);
+  analogWrite(g_pin, 0);
+  analogWrite(b_pin, 0);
+  delay(500);
+
+  // Turn Off Led
+  analogWrite(r_pin, 0);
+  analogWrite(g_pin, 0);
+  analogWrite(b_pin, 0);
+  delay(500);
+}
+
+void green_led() {
+  // Show Led in Green
+  analogWrite(r_pin, 0);
+  analogWrite(g_pin, 255);
+  analogWrite(b_pin, 0);
+  delay(500);
+
+  // Turn Off Led
+  analogWrite(r_pin, 0);
+  analogWrite(g_pin, 0);
+  analogWrite(b_pin, 0);
+  delay(500);
+}
+
+void blue_led() {
+  // Show Led in Blue
+  analogWrite(r_pin, 0);
+  analogWrite(g_pin, 0);
+  analogWrite(b_pin, 255);
+  delay(1000);
+
+  // Turn Off Led
+  analogWrite(r_pin, 0);
+  analogWrite(g_pin, 0);
+  analogWrite(b_pin, 0);
+  delay(1000);
+}
+
+
+// Get Last Element
+int last_element(int aray[],int lenght){
+    int last=0;
+    last = (lenght / sizeof(aray[0]) - 8 );
+    return last;
 }
